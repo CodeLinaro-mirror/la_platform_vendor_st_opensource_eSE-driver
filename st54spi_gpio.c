@@ -80,7 +80,7 @@ long st54spi_gpio_dev_ioctl(struct file *pfile, unsigned int cmd, unsigned long 
 		if ((arg == 0) || (arg == 1)) {
 			gpio_set_value(st54spi_gpio_dev->gpiod_reset, arg);
 			if (arg == 0) {
-				msleep(3);
+				usleep_range(3000, 3001);
 				}
 		} else {
 			pr_err("%s bad arg %lu\n", __func__, arg);
