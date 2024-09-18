@@ -34,11 +34,11 @@
 
 /* Flag ESE_CONF_GPIO_OPEN_RELEASE is to configure nRESET GPIO in
    open function and freeing GPIO in release function */
-#define ESE_CONF_GPIO_OPEN_RELEASE
+//#define ESE_CONF_GPIO_OPEN_RELEASE
 
 /* Flag ESE_CONF_GPIO_PROBE_REMOVE is to configure
    nRESET GPIO in probe function */
-//#define ESE_CONF_GPIO_PROBE_REMOVE
+#define ESE_CONF_GPIO_PROBE_REMOVE
 
 #define ST54SPI_GPIO__MAGIC  0xEB
 #define ST54SPI_GET_GPIO	_IOW(ST54SPI_GPIO__MAGIC, 0x01, unsigned int)
@@ -117,7 +117,7 @@ static int st54spi_gpio_dev_open(struct inode *inode, struct file *pfile)
 		return -EFAULT;
 	}
 
-	rc = gpio_direction_output(st54spi_gpio_dev->gpiod_reset, 0);
+	rc = gpio_direction_output(st54spi_gpio_dev->gpiod_reset, 1);
 	if (rc < 0) {
 		pr_err("%s: gpio cannot set the output %d\n", __func__, rc);
 		gpio_free(st54spi_gpio_dev->gpiod_reset);
@@ -181,7 +181,7 @@ static int st54spi_gpio_probe(struct platform_device *pdev)
 #if (KERNEL_VERSION(6, 3, 0) <= LINUX_VERSION_CODE)
 	st54spi_gpio_dev->class = class_create("st54spi_gpio");
 #else
- 	st54spi_gpio_dev->class = class_create(THIS_MODULE, "st54spi_gpio");
+	st54spi_gpio_dev->class = class_create(THIS_MODULE, "st54spi_gpio");
 #endif
 
 	if (IS_ERR(st54spi_gpio_dev->class)) {
@@ -222,7 +222,7 @@ static int st54spi_gpio_probe(struct platform_device *pdev)
 		goto fail_gpiod_get;
 	}
 
-	rc = gpio_direction_output(st54spi_gpio_dev->gpiod_reset, 0);
+	rc = gpio_direction_output(st54spi_gpio_dev->gpiod_reset, 1);
 	if (rc < 0) {
 		pr_err("%s: gpio cannot set the output %d\n", __func__, rc);
 		rc = -EFAULT;
