@@ -35,11 +35,11 @@
 
 /* Flag ESE_CONF_GPIO_OPEN_RELEASE is to configure nRESET GPIO in
    open function and freeing GPIO in release function */
-#define ESE_CONF_GPIO_OPEN_RELEASE
+//#define ESE_CONF_GPIO_OPEN_RELEASE
 
 /* Flag ESE_CONF_GPIO_PROBE_REMOVE is to configure
    nRESET GPIO in probe function */
-//#define ESE_CONF_GPIO_PROBE_REMOVE
+#define ESE_CONF_GPIO_PROBE_REMOVE
 
 #define ST54SPI_GPIO__MAGIC  0xEB
 #define ST54SPI_GET_GPIO	_IOW(ST54SPI_GPIO__MAGIC, 0x01, unsigned int)
@@ -80,8 +80,9 @@ long st54spi_gpio_dev_ioctl(struct file *pfile, unsigned int cmd, unsigned long 
 	case ST54SPI_SET_GPIO:
 		if ((arg == 0) || (arg == 1)) {
 			gpio_set_value(st54spi_gpio_dev->gpiod_reset, arg);
-			if (arg == 0)
+			if (arg == 0) {
 				usleep_range(3000, 3001);
+				}
 		} else {
 			pr_err("%s bad arg %lu\n", __func__, arg);
 			ret = -ENOIOCTLCMD;
@@ -117,7 +118,7 @@ static int st54spi_gpio_dev_open(struct inode *inode, struct file *pfile)
 		return -EFAULT;
 	}
 
-	rc = gpio_direction_output(st54spi_gpio_dev->gpiod_reset, 0);
+	rc = gpio_direction_output(st54spi_gpio_dev->gpiod_reset, 1);
 	if (rc < 0) {
 		pr_err("%s: gpio cannot set the output %d\n", __func__, rc);
 		gpio_free(st54spi_gpio_dev->gpiod_reset);
@@ -222,7 +223,7 @@ static int st54spi_gpio_probe(struct platform_device *pdev)
 		goto fail_gpiod_get;
 	}
 
-	rc = gpio_direction_output(st54spi_gpio_dev->gpiod_reset, 0);
+	rc = gpio_direction_output(st54spi_gpio_dev->gpiod_reset, 1);
 	if (rc < 0) {
 		pr_err("%s: gpio cannot set the output %d\n", __func__, rc);
 		rc = -EFAULT;
