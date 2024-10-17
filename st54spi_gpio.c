@@ -252,7 +252,11 @@ fail_class_create:
 }
 
 /* This function will be called to remove the character device*/
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(6, 10, 0))
 static int st54spi_gpio_remove(struct platform_device *pdev)
+#else
+static void st54spi_gpio_remove(struct platform_device *pdev)
+#endif
 {
 	struct st54spi_gpio_device *st54spi_gpio_dev;
 	struct device *dev = &pdev->dev;
@@ -270,7 +274,9 @@ static int st54spi_gpio_remove(struct platform_device *pdev)
 		gpio_free(st54spi_gpio_dev->gpiod_reset);
 
 #endif
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(6, 10, 0))
 	return 0;
+#endif
 }
 
 static const struct of_device_id st54spi_gpio_of_match[] = {
