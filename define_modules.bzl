@@ -10,8 +10,10 @@ def define_modules(target, variant):
         out = "stm_st54se_gpio.ko",
         srcs = ["st54spi_gpio.c"],
         includes = [".", "linux"],
-        deps = ["//msm-kernel:all_headers"],
-        kernel_build = "//msm-kernel:{}".format(tv),
+        deps = [
+                "//soc-repo:all_headers",
+        ],
+        kernel_build = "//soc-repo:{}_base_kernel".format(tv),
         visibility = ["//visibility:public"]
     )
 
