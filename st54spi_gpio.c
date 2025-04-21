@@ -61,6 +61,8 @@ struct st54spi_gpio_device {
 	int gpiod_reset;
 };
 
+static char device_name[MAX_NAME_SIZE] = {0};
+
 /** @brief   IOCTL function  to be used to set or get data from upper layer.
  *
  *  @param   pfile  fil node for opened device.
@@ -167,7 +169,6 @@ static int st54spi_gpio_probe(struct platform_device *pdev)
 	struct device *dev = &pdev->dev;
 	struct device_node *np = dev->of_node;
 	enum st_device_type device_id;
-	char device_name[MAX_NAME_SIZE] = {0};
 
 	if (np == NULL) {
 		pr_err("%s : struct np is null\n", __func__);
