@@ -2,7 +2,7 @@
 /*
  * ST54SPI GPIO driver
  * Copyright (C) 2021 ST Microelectronics S.A.
- * Copyright (c) 2022-2024 Qualcomm Innovation Center, Inc. All rights reserved.
+ * Copyright (c) 2022-2025 Qualcomm Innovation Center, Inc. All rights reserved.
  *  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -67,6 +67,10 @@ long st54spi_gpio_dev_ioctl(struct file *pfile, unsigned int cmd, unsigned long 
 {
 	int ret = 0;
 	struct st54spi_gpio_device *st54spi_gpio_dev = pfile->private_data;
+
+	if (is_compat_task()) {
+		arg = (compat_u64)arg;
+	}
 
 	if (!st54spi_gpio_dev) {
 		pr_err("%s ENODEV! st54spi_gpio_dev is NULL\n", __func__);
@@ -154,6 +158,7 @@ static const struct file_operations st54spi_gpio_dev_fops = {
 	.open = st54spi_gpio_dev_open,
 	.release = st54spi_gpio_dev_release,
 	.unlocked_ioctl = st54spi_gpio_dev_ioctl,
+	.compat_ioctl = st54spi_gpio_dev_ioctl,
 };
 
 /* This function will be called to probe the character device*/
