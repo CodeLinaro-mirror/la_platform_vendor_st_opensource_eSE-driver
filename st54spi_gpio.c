@@ -43,6 +43,10 @@
 #define ST54SPI_GPIO__MAGIC  0xEB
 #define ST54SPI_GET_GPIO	_IOW(ST54SPI_GPIO__MAGIC, 0x01, unsigned int)
 #define ST54SPI_SET_GPIO	_IOW(ST54SPI_GPIO__MAGIC, 0x02, unsigned int)
+#define ST54SPI_RESET_GPIO	_IOW(ST54SPI_GPIO__MAGIC, 0x03, unsigned int)
+
+// define pulses time express in msec
+#define HARD_RESET_TIME_PULSE 10
 
 struct st54spi_gpio_device {
 	dev_t st54spi_gpio_dev_t;
@@ -77,15 +81,25 @@ long st54spi_gpio_dev_ioctl(struct file *pfile, unsigned int cmd, unsigned long 
 		ret = gpio_get_value(st54spi_gpio_dev->gpiod_reset);
 		break;
 	case ST54SPI_SET_GPIO:
-		if ((arg == 0) || (arg == 1)) {
-			gpio_set_value(st54spi_gpio_dev->gpiod_reset, arg);
-			if (arg == 0) {
-				usleep_range(3000, 3001);
-				}
+		pr_info("ST54SPI_SET_GPIO: %lu\n", arg);
+		/* skip setting gpio low */
+		if (arg == 0) {
+			break;
+		} else if (arg == 1) {
+			if (gpio_get_value(st54spi_gpio_dev->gpiod_reset) == 0) {
+				gpio_set_value(st54spi_gpio_dev->gpiod_reset, arg);
+				msleep(HARD_RESET_TIME_PULSE);
+			}
 		} else {
 			pr_err("%s bad arg %lu\n", __func__, arg);
 			ret = -ENOIOCTLCMD;
 		}
+		break;
+	case ST54SPI_RESET_GPIO:
+		pr_info("ST54SPI_RESET_GPIO\n");
+		gpio_set_value(st54spi_gpio_dev->gpiod_reset, 0);
+		msleep(HARD_RESET_TIME_PULSE);
+		gpio_set_value(st54spi_gpio_dev->gpiod_reset, 1);
 		break;
 	default:
 		pr_err("%s Unsupported ioctl cmd 0x%x, arg %lu\n",
@@ -147,10 +161,13 @@ static int st54spi_gpio_dev_release(struct inode *inode, struct file *pfile)
 
 static const struct file_operations st54spi_gpio_dev_fops = {
 	.owner = THIS_MODULE,
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(6, 12, 0))
 	.llseek = no_llseek,
+#endif
 	.open = st54spi_gpio_dev_open,
 	.release = st54spi_gpio_dev_release,
 	.unlocked_ioctl = st54spi_gpio_dev_ioctl,
+	.compat_ioctl = st54spi_gpio_dev_ioctl,
 };
 
 /* This function will be called to probe the character device*/
@@ -272,8 +289,8 @@ static void st54spi_gpio_remove(struct platform_device *pdev)
 #ifdef ESE_CONF_GPIO_PROBE_REMOVE
 	if (gpio_is_valid(st54spi_gpio_dev->gpiod_reset))
 		gpio_free(st54spi_gpio_dev->gpiod_reset);
-
 #endif
+
 #if (LINUX_VERSION_CODE < KERNEL_VERSION(6, 10, 0))
 	return 0;
 #endif
