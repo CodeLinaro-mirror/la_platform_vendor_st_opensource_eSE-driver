@@ -2,7 +2,8 @@
 /*
  * ST54SPI GPIO driver
  * Copyright (C) 2021 ST Microelectronics S.A.
- * Copyright (c) 2022-2025 Qualcomm Innovation Center, Inc. All rights reserved.
+ * Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
+ *
  *  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -91,6 +92,8 @@ long st54spi_gpio_dev_ioctl(struct file *pfile, unsigned int cmd, unsigned long 
 			gpio_set_value(st54spi_gpio_dev->gpiod_reset, arg);
 			if (arg == 0)
 				usleep_range(3000, 3001);
+			if (arg == 1)
+				usleep_range(10000, 10001);
 		} else {
 			pr_err("%s bad arg %lu\n", __func__, arg);
 			ret = -ENOIOCTLCMD;
